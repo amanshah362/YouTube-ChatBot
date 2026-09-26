@@ -1,3 +1,4 @@
+import os
 import re
 import logging
 
@@ -6,8 +7,36 @@ from youtube_transcript_api import (
     TranscriptsDisabled,
     NoTranscriptFound,
 )
+from youtube_transcript_api.proxies import WebshareProxyConfig
 
 logger = logging.getLogger(__name__)
+
+
+def _build_api() -> YouTubeTranscriptApi:
+    """
+    Cloud provider IPs (AWS, GCP, Azure, etc.) are frequently blocked by
+    YouTube. If Webshare proxy credentials are configured via environment
+    variables, route requests through them to avoid RequestBlocked errors.
+    Falls back to a direct connection if no proxy is configured (fine for
+    local development on a residential IP).
+    """
+    proxy_username = os.getenv("WEBSHARE_PROXY_USERNAME")
+    proxy_password = os.getenv("WEBSHARE_PROXY_PASSWORD")
+
+    if proxy_username and proxy_password:
+        logger.info("Using Webshare proxy for YouTube transcript requests.")
+        return YouTubeTranscriptApi(
+            proxy_config=WebshareProxyConfig(
+                proxy_username=proxy_username,
+                proxy_password=proxy_password,
+            )
+        )
+
+    logger.warning(
+        "No proxy configured (WEBSHARE_PROXY_USERNAME/PASSWORD not set). "
+        "Requests from cloud IPs (AWS/GCP/Azure) may be blocked by YouTube."
+    )
+    return YouTubeTranscriptApi()
 
 
 def extract_video_id(url_or_id: str) -> str:
@@ -52,7 +81,7 @@ def get_english_transcript(url_or_id: str) -> str:
     video_id = extract_video_id(url_or_id)
 
     try:
-        api = YouTubeTranscriptApi()
+        api = _build_api()
         transcript_list = api.list(video_id)
 
         try:
