@@ -59,7 +59,6 @@ YouTube-ChatBot/
 ├── chatbot-env/               # Virtual environment (git-ignored)
 ├── requirements.txt
 ├── .env                        # Your secrets (git-ignored, create this)
-├── .env.example                # Template for required env vars
 ├── .gitignore
 └── README.md
 ```
