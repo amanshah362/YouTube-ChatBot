@@ -1,0 +1,25 @@
+# LangChain
+langchain
+langchain-core
+langchain-community
+langchain-classic
+langchain-huggingface
+langchain-text-splitters
+langchain-pinecone>=0.2.0
+
+# Embeddings / ML
+sentence-transformers
+torch
+torchvision
+
+# Pinecone
+pinecone
+
+# YouTube Transcript
+youtube-transcript-api
+
+# Environment
+python-dotenv
+
+# UI
+streamlit
