@@ -715,7 +715,7 @@ See the [`LICENSE`](LICENSE) file for the complete license text.
 
 **Aman Shah**
 
-Junior Data Scientist focused on:
+AI/ML Engineer focused on:
 
 - Machine Learning
 - Deep Learning
@@ -734,4 +734,4 @@ This project is part of my ongoing work in exploring practical **Generative AI a
 If you find this project useful or interesting, consider giving the repository a ⭐ on GitHub.
 
 Your feedback, suggestions, and contributions are welcome.
->>>>>>> f5b3923 (Update README)
+
