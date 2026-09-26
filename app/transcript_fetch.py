@@ -7,7 +7,7 @@ from youtube_transcript_api import (
     TranscriptsDisabled,
     NoTranscriptFound,
 )
-from youtube_transcript_api.proxies import WebshareProxyConfig
+from youtube_transcript_api.proxies import WebshareProxyConfig, GenericProxyConfig
 
 logger = logging.getLogger(__name__)
 
@@ -15,10 +15,11 @@ logger = logging.getLogger(__name__)
 def _build_api() -> YouTubeTranscriptApi:
     """
     Cloud provider IPs (AWS, GCP, Azure, etc.) are frequently blocked by
-    YouTube. If Webshare proxy credentials are configured via environment
-    variables, route requests through them to avoid RequestBlocked errors.
-    Falls back to a direct connection if no proxy is configured (fine for
-    local development on a residential IP).
+    YouTube. Priority order for routing around this:
+      1. Webshare Rotating Residential proxy (paid, most reliable) if
+         WEBSHARE_PROXY_USERNAME/PASSWORD are set.
+      2. Tor SOCKS5 proxy (free, less reliable) if USE_TOR=true.
+      3. Direct connection (fine only on a residential/non-cloud IP).
     """
     proxy_username = os.getenv("WEBSHARE_PROXY_USERNAME")
     proxy_password = os.getenv("WEBSHARE_PROXY_PASSWORD")
@@ -32,8 +33,17 @@ def _build_api() -> YouTubeTranscriptApi:
             )
         )
 
+    if os.getenv("USE_TOR", "false").lower() == "true":
+        logger.info("Using local Tor SOCKS5 proxy for YouTube transcript requests.")
+        return YouTubeTranscriptApi(
+            proxy_config=GenericProxyConfig(
+                http_url="socks5h://127.0.0.1:9050",
+                https_url="socks5h://127.0.0.1:9050",
+            )
+        )
+
     logger.warning(
-        "No proxy configured (WEBSHARE_PROXY_USERNAME/PASSWORD not set). "
+        "No proxy configured (WEBSHARE_PROXY_USERNAME/PASSWORD or USE_TOR not set). "
         "Requests from cloud IPs (AWS/GCP/Azure) may be blocked by YouTube."
     )
     return YouTubeTranscriptApi()
